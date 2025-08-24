@@ -23,23 +23,23 @@ init()                    # Ініціалізація всіх модулів p
 window_size = 1200, 800   # Розміри вікна гри (ширина, висота)
 window = display.set_mode(window_size)  # Створення ігрового вікна
 clock = time.Clock()      # Об'єкт для контролю частоти кадрів (FPS)
+
 try:
-    bg_image = image.load("images/backgrounds.png").convert()
+    bg_image = image.load("images/bg.jpg").convert()
     bg_image = transform.scale(bg_image,window_size)
 
-    bird_image = image.load("images/backgrounds.png").convert_alpha()
-    bird_image = transform.scale(bird_image,100,100)
+    bird_image = image.load("images/bird.png").convert_alpha()
+    bird_image = transform.scale(bird_image, (100,100))
 
-    pipe_image = image.load("images/pipe.png").convert()
+    pipe_image = image.load("images/pipe.jpg").convert()
 
     ground_image = image.load("images/ground.png").convert()
-    ground_image = transform.scale(ground_image,(window_size[0],100))
+    ground_image = transform.scale(ground_image, (window_size[0],100))
 except:
     bg_image = None
     bird_image = None
     pipe_image = None
     ground_image = None
-
 
 # ====== НАЛАШТУВАННЯ ГРАВЦЯ ======
 player_rect = Rect(150, window_size[1]//2-100, 100, 100)  # Прямокутник гравця (x, y, ширина, висота)
@@ -84,19 +84,37 @@ with sd.InputStream(samplerate=sr, channels=1, blocksize=block, callback=audio_c
         player_rect.y += int(y_vel)  # Оновлюємо позицію гравця по Y
 
         # ====== ВІДОБРАЖЕННЯ ГРАФІКИ ======
-        window.fill('sky blue')  # Заповнення фону блакитним кольором
-        draw.rect(window, 'red', player_rect)  # Малювання червоного квадрата гравця
+        if bg_image:
+            window.blit(bg_image,(0,0))
+        else:
+            window.fill('sky blue')  # Заповнення фону блакитним кольором
+
+        if bird_image:
+            angle = max(-45, min(45,y_vel*3))
+            rotated_bird = transform.rotate(bird_image,-angle)
+            bird_rect = rotated_bird.get_rect(center = player_rect.center)
+            window.blit(rotated_bird,bird_rect)
+        else:
+            draw.rect(window, 'red', player_rect)  # Малювання червоного квадрата гравця
 
         # ====== ОБРОБКА ТРУБ (ПЕРЕШКОД) ======
-        for pie in pies[:]:       # Ітерація по копії списку труб
-            if not lose:          # Якщо гра не закінчена
-                pie.x -= 10       # Рух труби вліво зі швидкістю 10 пікселів/кадр
-            draw.rect(window, 'green', pie)  # Малювання зеленої труби
-            if pie.x <= -100:     # Якщо труба вийшла за ліву межу екрану
-                pies.remove(pie)  # Видалення труби зі списку
-                score += 0.5      # Збільшення рахунку (0.5 за кожну трубу = 1 за пару)
-            if player_rect.colliderect(pie):  # Перевірка зіткнення гравця з трубою
-                lose = True       # Встановлення прапорця програшу
+        for pie in pies[:]:
+            if not lose:
+                pie.x -= 10
+
+            # Малювання труб з текстурою
+            if pipe_image:
+                # Масштабуємо зображення під розмір труби
+                scaled_pipe = transform.scale(pipe_image, (pie.width, pie.height))
+                window.blit(scaled_pipe, pie)
+            else:
+                draw.rect(window, 'green', pie)
+
+            if pie.x <= -100:
+                pies.remove(pie)
+                score += 0.5
+            if player_rect.colliderect(pie):
+                lose = True
 
         # ====== ГЕНЕРАЦІЯ НОВИХ ТРУБ ======
         if len(pies) < 8:         # Якщо залишилось менше 8 труб
@@ -106,6 +124,10 @@ with sd.InputStream(samplerate=sr, channels=1, blocksize=block, callback=audio_c
         score_text = main_font.render(f'{int(score)}', 1, 'black')  # Створення тексту рахунку
         # Відображення рахунку по центру вгорі екрану
         window.blit(score_text, (window_size[0]//2 - score_text.get_rect().w//2, 40))
+
+        if ground_image:
+            ground_y = window_size[1] - 100
+            window.blit(ground_image, (0, ground_y))
 
         display.update()          # Оновлення екрану (показ всіх змін)
         clock.tick(60)            # Обмеження до 60 FPS
