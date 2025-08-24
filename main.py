@@ -23,6 +23,23 @@ init()                    # Ініціалізація всіх модулів p
 window_size = 1200, 800   # Розміри вікна гри (ширина, висота)
 window = display.set_mode(window_size)  # Створення ігрового вікна
 clock = time.Clock()      # Об'єкт для контролю частоти кадрів (FPS)
+try:
+    bg_image = image.load("images/backgrounds.png").convert()
+    bg_image = transform.scale(bg_image,window_size)
+
+    bird_image = image.load("images/backgrounds.png").convert_alpha()
+    bird_image = transform.scale(bird_image,100,100)
+
+    pipe_image = image.load("images/pipe.png").convert()
+
+    ground_image = image.load("images/ground.png").convert()
+    ground_image = transform.scale(ground_image,(window_size[0],100))
+except:
+    bg_image = None
+    bird_image = None
+    pipe_image = None
+    ground_image = None
+
 
 # ====== НАЛАШТУВАННЯ ГРАВЦЯ ======
 player_rect = Rect(150, window_size[1]//2-100, 100, 100)  # Прямокутник гравця (x, y, ширина, висота)
