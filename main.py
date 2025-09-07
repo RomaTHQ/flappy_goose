@@ -25,13 +25,13 @@ window = display.set_mode(window_size)  # Створення ігрового в
 clock = time.Clock()      # Об'єкт для контролю частоти кадрів (FPS)
 
 try:
-    bg_image = image.load("images/bg.jpg").convert()
+    bg_image = image.load("images/background.png").convert()
     bg_image = transform.scale(bg_image,window_size)
 
     bird_image = image.load("images/bird.png").convert_alpha()
     bird_image = transform.scale(bird_image, (100,100))
 
-    pipe_image = image.load("images/pipe.jpg").convert()
+    pipe_image = image.load("images/pipe.png").convert()
 
     ground_image = image.load("images/ground.png").convert()
     ground_image = transform.scale(ground_image, (window_size[0],100))
